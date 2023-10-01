@@ -25,4 +25,9 @@ public class Player {
         Player player = (Player) o;
         return Objects.equals(name, player.name);
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }
