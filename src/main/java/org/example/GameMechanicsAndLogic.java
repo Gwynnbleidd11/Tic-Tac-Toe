@@ -8,6 +8,7 @@ public class GameMechanicsAndLogic {
     private Player currentPlayer;
     private Player secondPlayer;
     private char currentSign;
+    private int rounds;
 
     public void initializeBoard() {
         for (int i = 0; i < 3; i++) {
@@ -48,24 +49,11 @@ public class GameMechanicsAndLogic {
     }
 
     public boolean isGameFinished() {
-        UserCommunication uc = new UserCommunication();
-        if (isItWin(board, 'X')) {
+        if (isItWin(board, currentSign)) {
             displayBoard();
-            System.out.println(uc.getPlayer1() + " wins!");
+            System.out.println(currentPlayer + " wins!");
             return true;
         }
-
-        if (isItWin(board, 'O')) {
-            displayBoard();
-            System.out.println(uc.getPlayer2() + " wins!");
-            return true;
-        }
-
-//        if (isItWin()) {
-//            displayBoard();
-//            System.out.println(uc.getComputer() + " wins!");
-//            return true;
-//        }
 
         if (isItDraw(board)) {
             displayBoard();
@@ -104,13 +92,19 @@ public class GameMechanicsAndLogic {
     }
 
     public void makeMove() {
+        UserCommunication uc = new UserCommunication();
         int row = 0, col = 0;
         boolean moveIsOk = false;
-        while (!moveIsOk) {
-            Coords coords = UserCommunication.getTheCoords();
-            row = coords.getRow();
-            col = coords.getCol();
-            moveIsOk = board[row][col] == ' ';
+        try {
+             while (!moveIsOk) {
+                System.out.println("Player " + currentPlayer + ", enter row number (0-2) and column number (0-2) seperated by space. Your sign is: " + currentSign);
+                Coords coords = uc.getTheCoords();
+                row = coords.getRow();
+                col = coords.getCol();
+                moveIsOk = board[row][col] == ' ';
+             }
+        } catch (Exception e) {
+            System.out.println("Field is taken, try again!");
         }
         board[row][col] = currentSign;
     }
@@ -140,7 +134,7 @@ public class GameMechanicsAndLogic {
         }
     }
 
-    public void regularGameWithComputer() {
+    public void regularGameWithComputerWhenPlayerStarts() {
         initializeBoard();
         while (true) {
             displayBoard();
@@ -150,6 +144,23 @@ public class GameMechanicsAndLogic {
             }
             changePlayer();
             computerMove();
+            if (isGameFinished()) {
+                break;
+            }
+            changePlayer();
+        }
+    }
+
+    public void regularGameWithComputerWhenComputerStarts() {
+        initializeBoard();
+        while (true) {
+            computerMove();
+            if (isGameFinished()) {
+                break;
+            }
+            changePlayer();
+            displayBoard();
+            makeMove();
             if (isGameFinished()) {
                 break;
             }
@@ -183,5 +194,13 @@ public class GameMechanicsAndLogic {
 
     public void setCurrentSign(char currentSign) {
         this.currentSign = currentSign;
+    }
+
+    public int getRounds() {
+        return rounds;
+    }
+
+    public void setRounds(int rounds) {
+        this.rounds = rounds;
     }
 }
