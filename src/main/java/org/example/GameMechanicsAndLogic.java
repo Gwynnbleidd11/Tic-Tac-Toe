@@ -2,17 +2,28 @@ package org.example;
 
 import java.util.Random;
 
+import static org.example.CheckForWin.*;
+
 public class GameMechanicsAndLogic {
 
-    private char[][] board = new char [3][3];
+    private char[][] board;
+    private int boardSize;
     private Player currentPlayer;
+    private Player firstPlayer;
     private Player secondPlayer;
-    private char currentSign;
+    private int firstPlayerPoints;
+    private int secondPlayerPoints;
+    private char currentSign = 'X';
     private int rounds;
+    private boolean playWithComputer;
+
+    public void createBoard() {
+        board = new char[boardSize][boardSize];
+    }
 
     public void initializeBoard() {
-        for (int i = 0; i < 3; i++) {
-            for(int j = 0; j < 3; j++) {
+        for (int i = 0; i < boardSize; i++) {
+            for(int j = 0; j < boardSize; j++) {
                 board[i][j] = ' ';
             }
         }
@@ -20,42 +31,48 @@ public class GameMechanicsAndLogic {
 
     public void displayBoard() {
         int rows = 0;
-        System.out.println("  0   1   2");
-        for (int i = 0; i < 3; i++) {
+        for (int cols = 0; cols < boardSize; cols++)
+            System.out.print("  " + cols + " ");
+        System.out.println();
+        for (int i = 0; i < boardSize; i++) {
             System.out.print(rows++ + " ");
-            for (int j = 0; j < 3; j++) {
+            for (int j = 0; j < boardSize; j++) {
                 System.out.print(board[i][j]);
-                if (j < 2) {
+                if (j < boardSize - 1) {
                     System.out.print(" | ");
                 }
             }
             System.out.println();
-            if (i < 2) {
-                System.out.println(" ------------");
+            if (i < boardSize - 1) {
+                System.out.println(" " + "----".repeat(boardSize));
             }
         }
     }
 
     public void changePlayer() {
-        Player temporaryPlayer;
-        if (currentSign == 'X') {
+        if (currentSign == 'X' && currentPlayer == firstPlayer) {
             currentSign = 'O';
-        } else {
+            currentPlayer = secondPlayer;
+        } else if (currentSign == 'X' && currentPlayer == secondPlayer) {
+            currentSign = 'O';
+            currentPlayer = firstPlayer;
+        } else if (currentSign == 'O' && currentPlayer == firstPlayer) {
             currentSign = 'X';
+            currentPlayer = secondPlayer;
+        } else if (currentSign == 'O' && currentPlayer == secondPlayer) {
+            currentSign = 'X';
+            currentPlayer = firstPlayer;
         }
-        temporaryPlayer = currentPlayer;
-        currentPlayer = secondPlayer;
-        secondPlayer = temporaryPlayer;
     }
 
-    public boolean isGameFinished() {
+    public boolean isRoundFinished() {
         if (isItWin(board, currentSign)) {
             displayBoard();
-            System.out.println(currentPlayer + " wins!");
+            System.out.println(currentPlayer + " wins this round!");
+            countingPoints();
             return true;
         }
-
-        if (isItDraw(board)) {
+        if (CheckForWin.isItDraw(board)) {
             displayBoard();
             System.out.println("Game finished as draw");
             return true;
@@ -63,42 +80,52 @@ public class GameMechanicsAndLogic {
         return false;
     }
 
-    public boolean isItDraw(char[][] board) {
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board[i].length; j++) {
-                if (board[i][j] == ' ')
-                    return false;
-            }
+    public void countingPoints() {
+        if (currentPlayer == firstPlayer) {
+            firstPlayerPoints++;
+        } else {
+            secondPlayerPoints++;
         }
-        return true;
     }
 
-    public boolean isItWin(char[][] board, char player) {
-        for (int i = 0; i < 3; i++) {
-            if (board[i][0] == player && board[i][1] == player && board[i][2] == player) {
-                return true;
-            }
-            if (board[0][i] == player && board[1][i] == player && board[2][i] == player) {
-                return true;
-            }
-        }
-        if (board[0][0] == player && board[1][1] == player && board[2][2] == player) {
+    public boolean isGameFinished() {
+        if (firstPlayerPoints >= rounds) {
+            System.out.println(firstPlayer + " wins the game!");
             return true;
-        }
-        if (board[0][2] == player && board[1][1] == player && board[2][0] == player) {
+        } else if (secondPlayerPoints >= rounds) {
+            System.out.println(secondPlayer + " wins wins the game!");
             return true;
         }
         return false;
     }
 
+    public boolean isItWin(char[][] board, char sign) {
+        int winningLength = (boardSize < 6) ? boardSize : 5;
+        for (int k = 0; k < boardSize; k++) {
+            char winner = checkRowWinner(board, k, winningLength);
+            winner = (winner == ' ') ? checkColumnWinner(board, k, winningLength): winner;
+            if (winner == 'X' || winner == 'O') {
+                return true;
+            }
+        }
+        for (int row = 0; row < board.length; row ++) {
+            for (int col = 0; col < boardSize; col++) {
+                char winner = checkDiagonalWin(board, row, col, winningLength);
+                if (winner == 'X' || winner == 'O') {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void makeMove() {
-        UserCommunication uc = new UserCommunication();
         int row = 0, col = 0;
         boolean moveIsOk = false;
         try {
              while (!moveIsOk) {
                 System.out.println("Player " + currentPlayer + ", enter row number (0-2) and column number (0-2) seperated by space. Your sign is: " + currentSign);
-                Coords coords = uc.getTheCoords();
+                Coords coords = UserDialogs.getTheCoords(boardSize);
                 row = coords.getRow();
                 col = coords.getCol();
                 moveIsOk = board[row][col] == ' ';
@@ -113,8 +140,8 @@ public class GameMechanicsAndLogic {
         Random random = new Random();
         int row, col;
         while (true) {
-            row = random.nextInt(3);
-            col = random.nextInt(3);
+            row = random.nextInt(boardSize);
+            col = random.nextInt(boardSize);
             if (board[row][col] == ' ') {
                 board[row][col] = currentSign;
                 break;
@@ -122,85 +149,126 @@ public class GameMechanicsAndLogic {
         }
     }
 
-    public void regularGameWithPlayer() {
+    public void displayScores() {
+        System.out.println("Number of points needed to win: " + rounds);
+        System.out.println(firstPlayer + " has " + firstPlayerPoints + " points");
+        System.out.println(secondPlayer + " has " + secondPlayerPoints + " points");
+        System.out.println();
+    }
+
+    public void playGame() {
+        playWithComputer = UserDialogs.getIfPlayWithComputer();
+        firstPlayer = new Player(UserDialogs.getPlayerName("1"));
+        if (!playWithComputer) {
+            secondPlayer = new Player(UserDialogs.getPlayerName("2"));
+        } else {
+            secondPlayer = new Player("Computer");
+        }
+        boardSize = UserDialogs.chooseSizeOfBoard();
+        rounds = UserDialogs.getNumberOfRounds();
+        firstPlayerPoints = 0;
+        secondPlayerPoints = 0;
+        while (!isGameFinished()) {
+            if (UserDialogs.whoStartsFirst() == 1)
+                currentPlayer = firstPlayer;
+            else
+                currentPlayer = secondPlayer;
+            if (!playWithComputer)
+                gameWithPlayer();
+            if (playWithComputer && currentPlayer == firstPlayer)
+                gameWithComputerWhenPlayerStarts();
+            if (playWithComputer && currentPlayer == secondPlayer)
+                gameWithComputerWhenComputerStarts();
+        }
+    }
+
+    public void gameWithPlayer() {
+        createBoard();
         initializeBoard();
         while (true) {
             displayBoard();
             makeMove();
-            if (isGameFinished()) {
+            if (isRoundFinished()) {
+                displayScores();
                 break;
             }
             changePlayer();
         }
     }
 
-    public void regularGameWithComputerWhenPlayerStarts() {
+    public void gameWithComputerWhenPlayerStarts() {
+        createBoard();
         initializeBoard();
         while (true) {
             displayBoard();
             makeMove();
-            if (isGameFinished()) {
+            if (isRoundFinished()) {
+                displayScores();
                 break;
             }
             changePlayer();
             computerMove();
-            if (isGameFinished()) {
+            if (isRoundFinished()) {
+                displayScores();
                 break;
             }
             changePlayer();
         }
     }
 
-    public void regularGameWithComputerWhenComputerStarts() {
+    public void gameWithComputerWhenComputerStarts() {
+        createBoard();
         initializeBoard();
         while (true) {
             computerMove();
-            if (isGameFinished()) {
+            if (isRoundFinished()) {
+                displayScores();
                 break;
             }
             changePlayer();
             displayBoard();
             makeMove();
-            if (isGameFinished()) {
+            if (isRoundFinished()) {
+                displayScores();
                 break;
             }
             changePlayer();
         }
     }
 
-    public char[][] getBoard() {
-        return board;
+    public int getBoardSize() {
+        return boardSize;
+    }
+
+    public void setBoardSize(int boardSize) {
+        this.boardSize = boardSize;
     }
 
     public Player getCurrentPlayer() {
         return currentPlayer;
     }
 
+    public Player getFirstPlayer() {
+        return firstPlayer;
+    }
+
     public Player getSecondPlayer() {
         return secondPlayer;
     }
 
-    public void setCurrentPlayer(Player currentPlayer) {
-        this.currentPlayer = currentPlayer;
+    public int getFirstPlayerPoints() {
+        return firstPlayerPoints;
     }
 
-    public void setSecondPlayer(Player secondPlayer) {
-        this.secondPlayer = secondPlayer;
+    public int getSecondPlayerPoints() {
+        return secondPlayerPoints;
     }
 
     public char getCurrentSign() {
         return currentSign;
     }
 
-    public void setCurrentSign(char currentSign) {
-        this.currentSign = currentSign;
-    }
-
     public int getRounds() {
         return rounds;
-    }
-
-    public void setRounds(int rounds) {
-        this.rounds = rounds;
     }
 }

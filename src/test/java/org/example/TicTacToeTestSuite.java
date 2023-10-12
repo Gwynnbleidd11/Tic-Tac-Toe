@@ -16,6 +16,7 @@ public class TicTacToeTestSuite {
         void testCheckingPlayerOWinningInRows() {
             //Given
             GameMechanicsAndLogic gmal = new GameMechanicsAndLogic();
+            gmal.setBoardSize(3);
             char[][] row1 = new char[3][3];
             char[][] row2 = new char[3][3];
             char[][] row3 = new char[3][3];
@@ -46,11 +47,13 @@ public class TicTacToeTestSuite {
         void testCheckingPlayerOWinningInColumns() {
             //Given
             GameMechanicsAndLogic gmal = new GameMechanicsAndLogic();
+            gmal.setBoardSize(3);
             char[][] col1 = new char[3][3];
             char[][] col2 = new char[3][3];
             char[][] col3 = new char[3][3];
             char[][] col4 = new char[3][3];
             char[][] col5 = new char[3][3];
+
             col1[0][0] = 'O'; col1[1][0] = 'O'; col1[2][0] = 'O';
             col2[0][1] = 'O'; col2[1][1] = 'O'; col2[2][1] = 'O';
             col3[0][2] = 'O'; col3[1][2] = 'O'; col3[2][2] = 'O';
@@ -76,6 +79,7 @@ public class TicTacToeTestSuite {
         void testCheckingPlayerOWinningDiagonally() {
             //Given
             GameMechanicsAndLogic gmal = new GameMechanicsAndLogic();
+            gmal.setBoardSize(3);
             char[][] dial1 = new char[3][3];
             char[][] dial2 = new char[3][3];
             char[][] dial3 = new char[3][3];
@@ -107,6 +111,7 @@ public class TicTacToeTestSuite {
         void testCheckingPlayerXWinningInRows() {
             //Given
             GameMechanicsAndLogic gmal = new GameMechanicsAndLogic();
+            gmal.setBoardSize(3);
             char[][] row1 = new char[3][3];
             char[][] row2 = new char[3][3];
             char[][] row3 = new char[3][3];
@@ -137,6 +142,7 @@ public class TicTacToeTestSuite {
         void testCheckingPlayerXWinningInColumns() {
             //Given
             GameMechanicsAndLogic gmal = new GameMechanicsAndLogic();
+            gmal.setBoardSize(3);
             char[][] col1 = new char[3][3];
             char[][] col2 = new char[3][3];
             char[][] col3 = new char[3][3];
@@ -167,6 +173,7 @@ public class TicTacToeTestSuite {
         void testCheckingPlayerXWinningDiagonally() {
             //Given
             GameMechanicsAndLogic gmal = new GameMechanicsAndLogic();
+            gmal.setBoardSize(3);
             char[][] dial1 = new char[3][3];
             char[][] dial2 = new char[3][3];
             char[][] dial3 = new char[3][3];
@@ -174,7 +181,7 @@ public class TicTacToeTestSuite {
             dial1[0][0] = 'X'; dial1[1][1] = 'X'; dial1[2][2] = 'X';
             dial2[0][2] = 'X'; dial2[1][1] = 'X'; dial2[2][0] = 'X';
             dial3[0][2] = 'X'; dial3[1][1] = 'O'; dial3[2][0] = 'X';
-            dial4[0][2] = 'O'; dial4[1][1] = 'O'; dial4[2][0] = 'O';
+            dial4[0][2] = 'O'; dial4[1][1] = 'X'; dial4[2][0] = 'O';
 
             //When
             boolean check1 = gmal.isItWin(dial1, 'X');
@@ -193,7 +200,6 @@ public class TicTacToeTestSuite {
     @Test
     void testCheckingDrawMethod() {
         //Given
-        GameMechanicsAndLogic gmal = new GameMechanicsAndLogic();
         char[][] draw1 = new char[3][3];                            // should return false
         draw1[0][0] = 'X'; draw1[1][0] = ' '; draw1[2][0] = 'O';
         draw1[0][1] = ' '; draw1[1][1] = 'X'; draw1[2][1] = ' ';
@@ -217,10 +223,10 @@ public class TicTacToeTestSuite {
         //When
 
         //Then
-        assertFalse(gmal.isItDraw(draw1));
-        assertTrue(gmal.isItDraw(draw2));
-        assertFalse(gmal.isItDraw(draw3));
-        assertTrue(gmal.isItDraw(draw4));
+        assertFalse(CheckForWin.isItDraw(draw1));
+        assertTrue(CheckForWin.isItDraw(draw2));
+        assertFalse(CheckForWin.isItDraw(draw3));
+        assertTrue(CheckForWin.isItDraw(draw4));
     }
 }
 
